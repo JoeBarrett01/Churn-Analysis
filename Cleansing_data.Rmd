@@ -37,12 +37,14 @@ all_data <- merge(temp, startup_details)
 ########################################################
 #                     QUESTIOINS                       #           
 #                                                      #
-#                                                      #
 # MAIL_SENT IS MISSIING DATA                           #
 # DOES LACK OF Y IN DIGITAL_CATALOG IMPLY A N          #
 # DOES LACK OF Y IN MENTOR_BENEFIT IMPLY A N           #
 # DOES LACK OF Y IN MIGRATION_BENEFIT IMPLY A N        #
 # DOES LACK OF Y IN FUNDRAIISING_ACTIVE_FLAG IMPLY A N #
+#                                                      #
+#                    To - Do                           #
+# (1) gather remaining data from Clair                 #
 ########################################################
 
 # removing dates and descriptive columns.
@@ -63,8 +65,11 @@ filtered_data <- subset(all_data, select = -c(ENROLLMENT_DATE,
                                               ELEVATOR_PITCH_LAST_UPDATE_DATE,
                                               MAIL_SENT_DATE,
                                               LAST_UPDATE_DATE,
-                                              STAGE
+                                              STAGE,
+                                              VEECTOR_LOGO_LAST_UPDATE_DATE
                                               ))
+
+head(filtered_data)
 
 
 ```
