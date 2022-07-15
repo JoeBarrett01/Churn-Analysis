@@ -1,0 +1,90 @@
+---
+title: "Data Cleaning"
+author: "Joe Barrett"
+date: "2022-07-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Churn Analysis
+
+# Reading Data
+
+```{r}
+# Cloud Orders
+library(readr)
+cloud_orders <- read.csv("Data/cloud_orders.csv")
+
+# mc_data_v
+mc_data_v <- read.csv("Data/mc_data_v.csv")
+
+#startup_deetails
+startup_details <- read.csv("Data/startup_details.csv")
+
+head(cloud_orders)
+head(mc_data_v)
+head(startup_details)
+
+```
+
+```{r}
+temp <- merge(cloud_orders,mc_data_v)
+all_data <- merge(temp, startup_details)
+
+########################################################
+#                     QUESTIOINS                       #           
+#                                                      #
+#                                                      #
+# MAIL_SENT IS MISSIING DATA                           #
+# DOES LACK OF Y IN DIGITAL_CATALOG IMPLY A N          #
+# DOES LACK OF Y IN MENTOR_BENEFIT IMPLY A N           #
+# DOES LACK OF Y IN MIGRATION_BENEFIT IMPLY A N        #
+# DOES LACK OF Y IN FUNDRAIISING_ACTIVE_FLAG IMPLY A N #
+########################################################
+
+# removing dates and descriptive columns.
+filtered_data <- subset(all_data, select = -c(ENROLLMENT_DATE,
+                                              PAYING_CUSTOMER,
+                                              PAYING_CUSTOMER_DATE,
+                                              MIGRATION_STAGE,
+                                              MENTORSHIP_MILESTONES,
+                                              PROFILE_CREATION_DATE,
+                                              USAGE_COMPLETION_DATE,
+                                              CASE_STUDY_LAST_UPDATE_DATE,
+                                              REF_ARCH_FILE_COUNT,
+                                              REF_ARCH_WORKLOAD,
+                                              REF_ARCH_COMMENTS,
+                                              REF_ARCH_LAST_UPDATE_DATE,
+                                              IS_SOLUTION,
+                                              IS_DATE,
+                                              ELEVATOR_PITCH_LAST_UPDATE_DATE,
+                                              MAIL_SENT_DATE,
+                                              LAST_UPDATE_DATE,
+                                              STAGE
+                                              ))
+
+
+```
+
+
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
