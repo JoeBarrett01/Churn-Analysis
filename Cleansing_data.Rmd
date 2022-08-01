@@ -1,17 +1,83 @@
 ---
-title: "Data Cleaning"
-author: "Joe Barrett"
-date: "2022-07-14"
-output: html_document
+title: "Churn Analysis"
+author: "Joe Barrett (jsb8vs)"
+date: "Due Date: 11:59pm, Apr 12 (Tue)"
+output:
+  html_document:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+    code_folding: hide
+  pdf_document:
+    toc: yes
+#runtime: shiny
+runtime: shiny
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+<style>
+h1.title {
+  font-size: 30px;
+}
+h1 {
+  font-size: 26px;
+}
+h2 {
+  font-size: 22px;
+}
+h3 { 
+  font-size: 18px;
+}
+
+</style>
+
+```{r, warning = FALSE}
+library(knitr)
+
 ```
 
-## Churn Analysis
+# Data
 
-# Reading Data
+* Data used is accessed via the Oracle for Startups repo.  
+
+* Many variables are available for access, I will be focussing on those bolded:
+  1. ORDER_ID
+  2. STARTUP_ID
+  3. COUNTRY
+  4. MIGRATION_STAGE
+  5. SPM
+  6. TOTAL_CONSUMPTION
+  7. PAID_CONSUMPTION
+  8. CREDIT_CONSUMPTION
+  9. REGION
+  10. PROFILE_CREATED (REMOVE)
+  11. CLOUD_USAGE
+
+  17. INDUSTRY1
+  18. INDUSTRY2
+  19. INDUSTRY3
+  20. TECHNOLOGY1
+  21. TECHNOLOGY2
+  22. TECHNOLOGY3
+  23. DESCRIPTION_PROVIDED (REMOVE)
+
+
+```{r, message=FALSE, include=FALSE, warning=FALSE}
+library(dplyr)
+library(plotly)
+library(ggplot2)
+library(devtools)
+library(knitr)
+library(ggjoy)
+library(kableExtra)
+library(tidyverse)
+library(lubridate)
+
+```
+
+
+# Data
+
+## Accessting Data
 
 ```{r}
 # Cloud Orders
@@ -68,68 +134,94 @@ monthly_usage <- subset(monthly_usage, select = -c(ORDER_ID
 
 #head(monthly_usage)
 
-# startup_deetails
-# startup_details <- read.csv("Data/startup_details.csv")
-# startup_details <- subset(startup_details, select = -c(REGION_CODE,
-#                                                        COUNTRY,
-#                                                        DIGITAL_CATALOUGE,
-#                                                        MENTOR_BENEFIT,
-#                                                        MIGRATION_BENEFIT,
-#                                                        FUNDRAISING_ACTIVE_FLAG,
-#                                                        STAGE))
+
+startup_details <- read.csv("Data/startup_details.csv")
+startup_details <- subset(startup_details, select = -c(REGION_CODE,
+                                                       COUNTRY,
+                                                       DIGITAL_CATALOUGE,
+                                                       MENTOR_BENEFIT,
+                                                       MIGRATION_BENEFIT,
+                                                       FUNDRAISING_ACTIVE_FLAG,
+                                                       STAGE))
 
 
 
 ```
-# Merging Data
+
+## Filtering Data
 
 ```{r}
-library(dplyr)
-
 df <- cloud_orders %>% right_join(daily_consumption)
 
 df2 <- df %>% right_join(mc_data_v)
 
 df3 <- df2 %>% right_join(startup_details)
-# monthly usage is an agregartion of daily usage
-
-#df4 <- df3 %>% right_join(startup_details)
 
 all_data <- df3
-########################################################
-#                     QUESTIOINS                       #       
-#                                                      #
-# MAIL_SENT IS MISSIING DATA                           #
-# DOES LACK OF Y IN DIGITAL_CATALOG IMPLY A N          #
-# DOES LACK OF Y IN MENTOR_BENEFIT IMPLY A N           #
-# DOES LACK OF Y IN MIGRATION_BENEFIT IMPLY A N        #
-# DOES LACK OF Y IN FUNDRAIISING_ACTIVE_FLAG IMPLY A N #
-# What do we do for missing categorical data-TECHNOLOGY#                                #                                                      #
-#                                                      #
-#                    To - Do                           #
-#                            #
-########################################################
 
 head(all_data)
 colnames(all_data)
 
-unique(all_data$TECHNOLOGY1)
+all_data <- subset(all_data, select = -c(PROFILE_CREATED,
+                                         INTEGRATION_STRATEGY,
+                                         MC_COMPLETE_STATUS,
+                                         CLOUD,
+                                         PK_USAGE,
+                                         PROMOTION_KIT_FLAG))
+```
+
+## A quick view
+
+```{r, warning=FALSE, message=FALSE}
+# Printing out the first few rows of data
+all_data_clean <- na.omit(all_data)
+kable(head(all_data_clean), booktabs = TRUE) %>% kable_styling(font_size = 13)
 
 ```
 
+## Data Validation
 
+TOTAL_CONSUMPTION	
+```{r}
+map(all_data_clean, class)
+```
+All features appear to have the associated data type. Null values were removed. 
 
+# Plots
 
+## Country X Tech X Cloud Usage
 
-```{r cars}
-summary(all_data)
+```{r, out.height="100%", message=FALSE}
+
+shinyApp(
+  ui <- fluidPage(
+  sliderInput("span4", label = "Span adjustment:",
+              min = 0.2, max = 0.9, value = 0.5, step = 0.1),
+  plotOutput("all_data_clean")
+  ),
+  
+  server <- function(input, output){
+    output$all_data_clean <- renderPlot({
+    ggplot(all_data_clean, aes(x = COUNTRY, y = CLOUD_USAGE)) + 
+        geom_point(aes(color = MIGRATION_STAGE)) + 
+        geom_hline(data = median(all_data_clean$CLOUD_USAGE)) +
+        
+        geom_smooth(data = all_data_clean, aes(x = COUNTRY, Y = CLOUD_USAGE),
+                    method="loess", 
+                    formula=y~x, 
+                    se=FALSE, 
+                    span=input$span4,
+                    color = "red")+
+        theme_bw() +
+        labs (title = "",
+              x = "",
+              y = "")+
+        theme(axis.text.x = element_text(angle=90, hjust=1))
+      })}
+)   
 ```
 
-## Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
+```{r pressure, echo=FALSE, include=FALSE}
 library(ggplot2)
 
 all_data <- na.omit(all_data)
@@ -146,10 +238,12 @@ ggplot(data = all_data, aes(x=INDUSTRY2, y=CLOUD_USAGE)) +
 
 ## Plotly
 
-```{r}
+```{r, include=FALSE}
 library(plotly)
 
 plotly_data <- subset(all_data, select = c(INDUSTRY2, CLOUD_USAGE, COUNTRY))
+
+plotly_data <- na.omit(plotly_data)
 
 ggplotly(ggplot() + 
            geom_point(data = plotly_data, aes(x = INDUSTRY2, y = CLOUD_USAGE, color = COUNTRY)) + 
