@@ -19,3 +19,6 @@ The following provides an analysis of churn - objectively identifying key featur
 ## Results
 - [Data Science Rotation.pdf](https://github.com/JoeBarrett01/Churn-Analysis/files/10098623/Data.Science.Rotation.pdf)
 
+## Logistics
+- Google Colaboratory will be used, analysis accross R and python. Code is written in the most general form such that the final_decision_tree.ipynb must mount your Drive, rather than proceed with SSH for easiest use. 
+
